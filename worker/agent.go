@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"net"
 	"sync"
+	"time"
 )
 
 // The agent of job server.
@@ -31,7 +32,11 @@ func newAgent(net, addr string, worker *Worker) (a *agent, err error) {
 func (a *agent) Connect() (err error) {
 	a.Lock()
 	defer a.Unlock()
-	a.conn, err = net.Dial(a.net, a.addr)
+
+	keepAlive := 59 * time.Minute
+	d := net.Dialer{KeepAlive: keepAlive}
+	a.conn, err = d.Dial(a.net, a.addr)
+	//a.conn, err = net.Dial(a.net, a.addr)
 	if err != nil {
 		return
 	}
